@@ -1,0 +1,31 @@
+Producing dataset...
+Saved dictionary to models/.pkl
+Vocab size:  43957
+Applying weight drop of 0.5 to weight_hh_l0
+Applying weight drop of 0.5 to weight_hh_l0
+Applying weight drop of 0.5 to weight_hh_l0
+[WeightDrop(
+  (module): LSTM(1000, 1500, batch_first=True)
+), WeightDrop(
+  (module): LSTM(1500, 1500, batch_first=True)
+), WeightDrop(
+  (module): LSTM(1500, 1000, batch_first=True)
+)]
+Using []
+Args: Namespace(alpha=2, attn='general', batch_size=16, beta=1, bptt=70, cached_data=None, clip=0.25, cuda=True, delimiter='<EOL>', dropout=0.4, dropoute=0.1, dropouth=0.1, dropouti=0.2, emsize=1000, epochs=20, keep_delimiter=True, log_interval=200, lr=10.0, max_tgt_len=200, model='LSTM', nhid=1500, nlayers=3, nonmono=5, optimizer='sgd', resume='', save='models/WP_title_key_story_e1000_h1500_edr0.2_hdr0.1_lr10_seq2seq.pt', seed=141, seq2seq=True, test_data='data/WritingPrompts/small_sample/WP.titlesepkeysepstory.test', tied=True, train_data='data/WritingPrompts/small_sample/WP.titlesepkeysepstory.train', valid_data='data/WritingPrompts/small_sample/WP.titlesepkeysepstory.dev', vocab_file='models/.pkl', wdecay=1.2e-06, wdrop=0.5, when=[-1])
+Model total parameters: 122064957
+Start epoch 1
+-----------------------------------------------------------------------------------------
+| end of epoch   1 | time: 1115.07s | valid loss  6.54 | valid ppl   694.79 | valid bpc    9.440
+-----------------------------------------------------------------------------------------
+Saving model (new best validation)
+Start epoch 2
+-----------------------------------------------------------------------------------------
+| end of epoch   2 | time: 1115.64s | valid loss  6.02 | valid ppl   411.89 | valid bpc    8.686
+-----------------------------------------------------------------------------------------
+Saving model (new best validation)
+Start epoch 3
+-----------------------------------------------------------------------------------------
+| end of epoch   3 | time: 1116.01s | valid loss  5.85 | valid ppl   348.33 | valid bpc    8.444
+-----------------------------------------------------------------------------------------
+Saving model (new best validation)
