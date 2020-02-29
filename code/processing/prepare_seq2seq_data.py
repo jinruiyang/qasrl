@@ -2,6 +2,7 @@ import pickle
 import argparse
 import numpy as np
 
+
 def download_unshorten_data(type):
     with open('../qasrl/qasrl-bank/qasrl-v2/{}_processed.pickle'.format(type), 'rb') as fin:
         data = pickle.load(fin)
@@ -16,7 +17,7 @@ def save_sentences(data):
     with open('../qasrl/qasrl-bank/qasrl-v2/sentences_train.txt', 'w') as fout:
         fout.write("\n".join(sentences_array))
 
-def save_qa(data, type):
+def save_qa(data, type, mode):
     qa_array = []
     count1 = 0
     count2 = 0
@@ -39,7 +40,32 @@ def save_qa(data, type):
 
 
                 for a in q_as["answers"]:
-                    v_q_a_list.append('<A>')
+                    # if mode == "debug" and " ".join(line["sentence"]) == "They may have optical and radio telescopes to see things that the human eye cant see .":
+                    #     print(a)
+                    #     print(line)
+                    #     if a["need_shorten"] == True:
+                    #         # print(a)
+                    #         for word in ['that', 'who', 'which']:
+                    #             if word in a['answer_string']:
+                    #                 try:
+                    #                     list = a['answer_string'].split()
+                    #                     a['answer_string'] = " ".join(list[0:list.index(word)])
+                    #                     count1 += 1
+                    #                     a["need_shorten"] = False
+                    #                     # q_as["answers"][index]["need_shorten"] == False
+                    #                 except:
+                    #                     continue
+                    #                 # break
+                    #         for head, relationship in dep[int(a['other_verb']):-1]:
+                    #             if int(a['other_verb']) == a["answer_span"][1]:
+                    #                 break   # the other verb is the last token of answer
+                    #             if head < int(a['other_verb']):
+                    #                 break
+                    #             else:
+                    #                 a['answer_string'] = " ".join(
+                    #                     line["sentence"][a['answer_span'][0]:int(a['other_verb']) + 1]) + " something ."
+                    #                 count2 += 1
+                    #                 a["need_shorten"] = False
                     if a["need_shorten"] == True:
                         for word in ['that', 'who', 'which']:
                             if word in a['answer_string']:
@@ -52,13 +78,30 @@ def save_qa(data, type):
                                 except:
                                     continue
                                 # break
+                        head_list = [1000]
                         for head, relationship in dep[int(a['other_verb']):-1]:
-                            if head < int(a['other_verb']):
-                                break
-                            else:
-                                a['answer_string'] = " ".join(line["sentence"][a['answer_span'][0]:int(a['other_verb']) + 1]) + " something ."
-                                count2 += 1
-                                a["need_shorten"] = False
+                            head_list.append(head)
+                            # if int(a['other_verb']) == a["answer_span"][1] - 1:
+                            #     break  # the other verb is the last token of answer
+
+                        if (min(head_list) >= int(a['other_verb'])) and (int(a['other_verb']) != a["answer_span"][1] - 1) :
+                            a['answer_string'] = " ".join(
+                                line["sentence"][a['answer_span'][0]:int(a['other_verb']) + 1]) + " something ."
+                            count2 += 1
+                            a["need_shorten"] = False
+                        # else:
+                        #     a['answer_string'] = " ".join(line["sentence"][a['answer_span'][0]:int(a['other_verb']) + 1]) + " something ."
+                            # count2 += 1
+                            # a["need_shorten"] = False
+                        v_q_a_list.append('<A>')
+                        v_q_a_list.append(a['answer_string'])
+                        # else:
+                        #     v_q_a_list.append('<A>')
+                        #     v_q_a_list.append(a['answer_string'])
+                    else:
+                        v_q_a_list.append('<A>')
+                        v_q_a_list.append(a['answer_string'])
+
 
                 # compute sentence level needed to shorten
                 for a in q_as["answers"]:
@@ -66,7 +109,8 @@ def save_qa(data, type):
                         flag = True
                         continue
 
-                    v_q_a_list.append(a['answer_string'])
+
+
         if flag == True:
             sentence_level_count += 1
         v_q_a_string = " ".join(v_q_a_list) + " <EQA> " + " ".join(line["sentence"])
@@ -80,17 +124,32 @@ def save_qa(data, type):
     with open('../QA-SRL/data/seq2seq/{}.txt'.format(type), 'w') as fout:
         fout.write(total_string)
 
+def sep_test(type):
+    with open('../QA-SRL/data/seq2seq/{}.txt'.format(type), "r") as fin:
+        data = fin.readlines()
+    QA_list = []
+    sent_list =[]
+    for line in data:
+        QA_list.append(line.split(' <EQA> ')[0] + " <EQA>")
+        sent_list.append(line.split(' <EQA> ')[0])
+    print(len(QA_list))
+    assert len(QA_list) == len(sent_list)
+    with open('../QA-SRL/data/seq2seq/{}_QA.txt'.format(type), 'w') as fout:
+        fout.write("\n".join(QA_list))
+    with open('../QA-SRL/data/seq2seq/{}_sent.txt'.format(type), 'w') as fout:
+        fout.write("\n".join(sent_list))
 
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--type', type=str, help='the dataset type train, dev, test')
-    # parser.add_argument('--mode', type=str, help='running mode')
+    parser.add_argument('--mode', type=str, help='running mode')
     args = parser.parse_args()
     data = download_unshorten_data(args.type)
     # save_sentences(data)
-    save_qa(data, args.type)
+    # save_qa(data, args.type, args.mode)
+    sep_test(args.type)
 
 
 

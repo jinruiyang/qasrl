@@ -102,7 +102,7 @@ def load_dataset(file_path):
 def sample_answer(dataset, situation_command):
     string_list = []
     count = 0
-    for i, line in enumerate(tqdm(dataset[0:100])):
+    for i, line in enumerate(dataset[0:100]):
         v_q_a_list = []
         v_q_a_list_2 = []
         # string_list.append(" ".join(line["sentence"]))
@@ -167,29 +167,40 @@ def sample_answer(dataset, situation_command):
                             dep = ref[i]["dep"] # liitle typo when saving pikcle used dep: as key
                             # print(len(dep))
                             # print(dep[0][2])
+
                             for j, info in enumerate(dep):
                                 word_dep = (info[2].governor - 1, info[2].dependency_relation)
                                 dep[j] = word_dep
-                            # print(dep)
-                            other_verb_idx = int(a["other_verb"])
-                            head_list = []
-                            for tuple in dep[other_verb_idx + 1 : -1]:
-                                head_list.append(tuple[0])
-                                if min(head_list) < other_verb_idx:
+
+                            for head, relationship in dep[int(a['other_verb']):-2]:
+                                if head < int(a['other_verb']):
                                     break
+                                else:
+                                    answer_2 = " ".join(
+                                        line["sentence"][a['answer_span'][0]:int(a['other_verb']) + 1]) + " something ."
+                                    v_q_a_string = "<V> {0} <Q> {1} <A> {2} <V2> {3}\n<V> {4} <Q> {5} <A> {6}".format(
+                                        verb, question, a["answer_string"], line["sentence"][int(a["other_verb"])], verb, question, answer_2)
+                                    v_q_a_list.append(v_q_a_string)
+                            # print(dep)
+                            # other_verb_idx = int(a["other_verb"])
+                            # head_list = []
+                            # for tuple in dep[other_verb_idx + 1 : -1]:
+                            #     head_list.append(tuple[0])
+                            #     if min(head_list) < other_verb_idx:
+                            #         break
                                 # if tuple[0] < other_verb_idx:
                                 #     continue
 
-                                else:
-                                    count += 1
-                                    answer = a["answer_string"]
-                                    answer_2 = " ".join(line["sentence"][a["answer_span"][0]:other_verb_idx + 1])
-                                    answer_2 += " something ."
-                                    v_2 = line["sentence"][int(a["other_verb"])]
-                                    # v_q_a_string = "<V> {0} <Q> {1} <A> {2} <V2> {3}".format(verb, question, answer, v_2)
-                                    v_q_a_string = "<V> {0} <Q> {1} <A> {2} <V2> {3}\n<V> {4} <Q> {5} <A> {6}".format(
-                                        verb, question, answer, v_2, verb, question, answer_2)
-                                    v_q_a_list.append(v_q_a_string)
+                                # else:
+                                #     count += 1
+                                #     answer = a["answer_string"]
+                                #     answer_2 = " ".join(line["sentence"][a["answer_span"][0]:other_verb_idx + 1])
+                                #     answer_2 += " something ."
+                                #     v_2 = line["sentence"][int(a["other_verb"])]
+                                #     # v_q_a_string = "<V> {0} <Q> {1} <A> {2} <V2> {3}".format(verb, question, answer, v_2)
+                                #     v_q_a_string = "<V> {0} <Q> {1} <A> {2} <V2> {3}\n<V> {4} <Q> {5} <A> {6}".format(
+                                #         verb, question, answer, v_2, verb, question, answer_2)
+                                #     v_q_a_list.append(v_q_a_string)
 
         # print(type(v_q_a_list))
         if len(v_q_a_list) != 0:
@@ -246,7 +257,7 @@ def dependency_parse_example():
     # stanfordnlp.download('en')  # This downloads the English models for the neural pipeline
     nlp = stanfordnlp.Pipeline()  # This sets up a default neural pipeline in English
 
-    doc = nlp("The original organism is preserved so that scientists might be able to study its DNA .")
+    doc = nlp("They may have optical and radio telescopes to see things that the human eye cant see .")
     # assert (len(line['sentence']) != doc.sentences[0].dependencies), 'dependencies token number does not match the original'
     dep = doc.sentences[0].dependencies
     # dataset[idx]["dep:"] = dep[0]
@@ -263,7 +274,7 @@ def main():
 
     if args.mode == "normal":
         dataset = load_dataset(file_path)
-        # sample_answer(dataset, args.situation)
+        sample_answer(dataset, args.situation)
         # all_answer(dataset)
     if args.mode == "sample":
         dependency_parse_example()

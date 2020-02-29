@@ -246,7 +246,8 @@ def evaluate(data_source):
     total_loss = 0
     with torch.no_grad():
         for i in range(0, len(data_source)):    
-            source, targets = get_batch(data_source, i, args.max_tgt_len)
+            # source, targets = get_batch(data_source, i, args.max_tgt_len)
+            source, targets = get_batch(data_source, i)
             if args.cuda:
                 source, targets = source.cuda(), targets.cuda()
 
@@ -286,12 +287,12 @@ def evaluate(data_source):
                     if args.multi_gpu:
                         total_loss += criterion(model.module.decoder.weight, model.module.decoder.bias, output, tgt).data * (tgt_len / targets.size(1))
                     else:
-                        total_loss += criterion(model.decoder.weight, model.decoder.bias, output,
-                                        tgt).data * (tgt_len / targets.size(1))
+                        total_loss += criterion(model.decoder.weight, model.decoder.bias, output, tgt).data * (tgt_len / targets.size(1))
                     # Detach the history from hidden nodes
                     hidden = repackage_hidden(hidden)
-
+    # print(type(total_loss))
     return total_loss.item() / len(data_source)
+    # return total_loss / len(data_source)
 
 
 def train():
@@ -311,10 +312,10 @@ def train():
         lr2 = optimizer.param_groups[0]['lr']
         optimizer.param_groups[0]['lr'] = lr2 * seq_len / args.bptt
 
-        if args.max_tgt_len is not None:
-            source, targets = get_batch(train_data, batch, args.max_tgt_len)
-        else:
-            source, targets = get_batch(train_data, batch)
+        # if args.max_tgt_len is not None:
+        #     source, targets = get_batch(train_data, batch, args.max_tgt_len)
+        # else:
+        source, targets = get_batch(train_data, batch)
         if args.cuda:
             source, targets = source.cuda(), targets.cuda()
 
